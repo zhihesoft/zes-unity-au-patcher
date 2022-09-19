@@ -81,7 +81,12 @@ namespace Au.Patcher
 
             foreach (var item in patchFileInfos)
             {
-                await DownloadFile(baseUrl + item.path, Path.Combine());
+                await DownloadFile(baseUrl + item.path,
+                    Path.Combine(Application.persistentDataPath, patchDir, item.path),
+                    (prog) =>
+                    {
+
+                    });
             }
 
         }
