@@ -15,6 +15,9 @@ namespace Au.Patcher
         /// </summary>
         public static bool useShortHash = true;
 
+        /// <summary>
+        /// output pretty print json
+        /// </summary>
         public static bool prettyPrint = true;
 
         /// <summary>
@@ -154,7 +157,7 @@ namespace Au.Patcher
             Encoding utf8WithoutBOM = new UTF8Encoding(false);
             using (StreamWriter writer = new StreamWriter(path, false, utf8WithoutBOM))
             {
-                var json = JsonUtility.ToJson(obj);
+                var json = JsonUtility.ToJson(obj, prettyPrint);
                 writer.Write(json);
             }
         }
