@@ -1,7 +1,7 @@
 {
   "name": "zes.au.patcher",
-  "displayName": "Au Patch",
-  "version": "0.1.5",
+  "displayName": "Au Patcher",
+  "version": "0.2.0",
   "description": "Au Patch library for Unity3D",
   "keywords": [
     "Script"
