@@ -11,6 +11,13 @@ namespace Au.Patcher
     public static class PatcherBuilder
     {
         /// <summary>
+        /// when true, use the first 8 hash code.
+        /// </summary>
+        public static bool useShortHash = true;
+
+        public static bool prettyPrint = true;
+
+        /// <summary>
         /// Build patcher
         /// </summary>
         /// <param name="version"></param>
@@ -31,7 +38,7 @@ namespace Au.Patcher
                 url = url,
                 minVersion = minVersion,
             };
-            versionInfo.Save(versionInfoPath);
+            SaveJson(versionInfo, versionInfoPath);
 
             string patchInfoPath = Path.Combine(bundlesDir, Constants.patchInfoFile);
             var patchInfo = new PatchInfo
@@ -40,7 +47,7 @@ namespace Au.Patcher
                 url = url,
                 files = CalcBundleHash(bundlesDir),
             };
-            patchInfo.Save(patchInfoPath);
+            SaveJson(patchInfo, patchInfoPath);
 
             if (!Directory.Exists(Application.streamingAssetsPath))
             {
@@ -81,7 +88,11 @@ namespace Au.Patcher
                 string md5sum = "";
                 int size = (int)new FileInfo(path).Length;
                 md5sum = assets.AsParallel().Aggregate("", (last, value) => CalcAssetMD5(value) + last);
-                md5sum = CalcMD5(md5sum).Substring(0, 8);
+                md5sum = CalcMD5(md5sum);
+                if (useShortHash)
+                {
+                    md5sum = md5sum.Substring(0, 8);
+                }
                 return new PatchFileInfo
                 {
                     size = size,
@@ -136,6 +147,16 @@ namespace Au.Patcher
             var md5bytes = md5.ComputeHash(bytes);
             var ret = BitConverter.ToString(md5bytes).ToLower().Replace("-", "");
             return ret;
+        }
+
+        private static void SaveJson(object obj, string path)
+        {
+            Encoding utf8WithoutBOM = new UTF8Encoding(false);
+            using (StreamWriter writer = new StreamWriter(path, false, utf8WithoutBOM))
+            {
+                var json = JsonUtility.ToJson(obj);
+                writer.Write(json);
+            }
         }
     }
 }

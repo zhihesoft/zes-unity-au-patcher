@@ -19,9 +19,11 @@ namespace Au.Patcher
             var streamingJson = await Utils.LoadLocalText(Path.Combine(Application.streamingAssetsPath, Constants.versionInfoFile));
             if (string.IsNullOrEmpty(streamingJson))
             {
+                DLog.Error($"cannot find version info in streaming assets fold");
                 return CheckResult.Failed;
             }
-            var stramingVersionInfo = VersionInfo.FromJson(streamingJson);
+            var stramingVersionInfo = JsonUtility.FromJson<VersionInfo>(streamingJson);
+
             localVersionInfo = await LoadLocalJson<VersionInfo>(patchDir, Constants.versionInfoFile);
             if (localVersionInfo == null || Utils.CompareVersion(stramingVersionInfo.version, localVersionInfo.version) > 0)
             {
@@ -43,7 +45,7 @@ namespace Au.Patcher
 
             if (compare > 0)
             {
-                Logger.Warn($"local ({localVersionInfo.version}) is great than remote ({remoteVersionInfo.version})");
+                DLog.Warn($"local ({localVersionInfo.version}) is great than remote ({remoteVersionInfo.version})");
                 await Extract(patchDir);
                 return CheckResult.None;
             }
@@ -65,7 +67,7 @@ namespace Au.Patcher
         {
             if (patchFileInfos == null || patchFileInfos.Length <= 0)
             {
-                Logger.Warn($"no patch files found");
+                DLog.Warn($"no patch files found");
                 progress?.Invoke(1);
                 return true;
             }
@@ -147,7 +149,7 @@ namespace Au.Patcher
 
                 if (www.result != UnityWebRequest.Result.Success)
                 {
-                    Logger.Error($"Download {www.url} failed: \n({www.responseCode}) {www.error})");
+                    DLog.Error($"Download {www.url} failed: \n({www.responseCode}) {www.error})");
                     return false;
                 }
 

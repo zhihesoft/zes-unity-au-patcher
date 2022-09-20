@@ -53,7 +53,7 @@ namespace Au.Patcher
             string localfilePath = Path.Combine(Application.persistentDataPath, path);
             if (!File.Exists(localfilePath))
             {
-                Logger.Error($"{localfilePath} not existed");
+                DLog.Error($"{localfilePath} not existed");
                 return null;
             }
 
@@ -87,7 +87,7 @@ namespace Au.Patcher
 
                 if (www.result != UnityWebRequest.Result.Success)
                 {
-                    Logger.Error($"Get {www.url} failed: \n({www.responseCode}) {www.error})");
+                    DLog.Error($"Get {www.url} failed: \n({www.responseCode}) {www.error})");
                     int code = (int)(www.responseCode == 0 ? 500 : www.responseCode);
                     return string.Empty;
                 }

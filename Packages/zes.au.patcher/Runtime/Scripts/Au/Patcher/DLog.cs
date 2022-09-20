@@ -2,7 +2,7 @@
 
 namespace Au.Patcher
 {
-    internal static class Logger
+    internal static class DLog
     {
         private static readonly string tag = "PATCH";
 
