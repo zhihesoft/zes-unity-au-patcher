@@ -7,12 +7,34 @@ using UnityEngine.Networking;
 
 namespace Au.Patcher
 {
+    /// <summary>
+    /// Patch class
+    /// </summary>
     public class Patch
     {
         private VersionInfo localVersionInfo;
         private PatchFileInfo[] patchFileInfos;
         private string patchDir;
 
+        /// <summary>
+        /// Get total patch size if existed.
+        /// </summary>
+        /// <returns></returns>
+        public int GetTotalPatchSize()
+        {
+            if (patchFileInfos == null)
+            {
+                return 0;
+            }
+
+            return patchFileInfos.Sum(i => i.size);
+        }
+
+        /// <summary>
+        /// Check patch status
+        /// </summary>
+        /// <param name="patchDir"></param>
+        /// <returns></returns>
         public async Task<CheckResult> Check(string patchDir)
         {
             this.patchDir = patchDir;
@@ -63,6 +85,11 @@ namespace Au.Patcher
             return CheckResult.Found;
         }
 
+        /// <summary>
+        /// Apply patch
+        /// </summary>
+        /// <param name="progress"></param>
+        /// <returns></returns>
         public async Task<bool> Apply(Action<float> progress)
         {
             if (patchFileInfos == null || patchFileInfos.Length <= 0)
