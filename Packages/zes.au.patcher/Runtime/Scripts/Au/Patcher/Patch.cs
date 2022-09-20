@@ -79,16 +79,20 @@ namespace Au.Patcher
                 baseUrl = baseUrl.Substring(0, baseUrl.Length - 1);
             }
 
+            float downloadSize = 0;
             foreach (var item in patchFileInfos)
             {
                 await DownloadFile(baseUrl + item.path,
                     Path.Combine(Application.persistentDataPath, patchDir, item.path),
                     (prog) =>
                     {
-
+                        progress?.Invoke((prog * item.size + downloadSize) / totalSize);
                     });
+                downloadSize += item.size;
+                progress?.Invoke(downloadSize / totalSize);
             }
-
+            progress?.Invoke(1);
+            return true;
         }
 
         private async Task<bool> Extract(string patchDir)
