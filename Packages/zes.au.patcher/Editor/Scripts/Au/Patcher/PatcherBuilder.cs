@@ -1,5 +1,4 @@
-﻿using Au.Patcher.Au.Patcher;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -23,8 +22,7 @@ namespace Au.Patcher
             string version,
             string url,
             string minVersion,
-            string bundlesDir,
-            bool copyToStreaming)
+            string bundlesDir)
         {
             string versionInfoPath = Path.Combine(bundlesDir, Constants.versionInfoFile);
             var versionInfo = new VersionInfo
@@ -44,17 +42,22 @@ namespace Au.Patcher
             };
             patchInfo.Save(patchInfoPath);
 
+            if (!Directory.Exists(Application.streamingAssetsPath))
+            {
+                Directory.CreateDirectory(Application.streamingAssetsPath);
+            }
+
             File.Copy(versionInfoPath, Path.Combine(Application.streamingAssetsPath, Constants.versionInfoFile), true);
             File.Copy(patchInfoPath, Path.Combine(Application.streamingAssetsPath, Constants.patchInfoFile), true);
 
-            if (copyToStreaming)
-            {
-                var bundles = GetBundles(bundlesDir);
-                bundles.ToList().ForEach(i =>
-                {
-                    File.Copy(Path.Combine(bundlesDir, i), Path.Combine(Application.streamingAssetsPath, i), true);
-                });
-            }
+            //if (copyToStreaming)
+            //{
+            //    var bundles = GetBundles(bundlesDir);
+            //    bundles.ToList().ForEach(i =>
+            //    {
+            //        File.Copy(Path.Combine(bundlesDir, i), Path.Combine(Application.streamingAssetsPath, i), true);
+            //    });
+            //}
         }
 
         /// <summary>
@@ -64,31 +67,21 @@ namespace Au.Patcher
         /// <returns></returns>
         public static PatchFileInfo[] CalcBundleHash(string bundlesDir)
         {
+            AssetBundle.UnloadAllAssetBundles(true);
+
             var bundles = GetBundles(bundlesDir);
 
-            var ret = bundles.AsParallel().Select(i =>
+            var ret = bundles.Select(i =>
             {
                 string path = Path.Combine(bundlesDir, i);
                 var item = AssetBundle.LoadFromFile(path);
+                string[] assets = item.isStreamedSceneAssetBundle ? item.GetAllScenePaths() : item.GetAllAssetNames();
+                item.Unload(true);
+
                 string md5sum = "";
-                string[] assets;
-                int size = 0;
-                if (item.isStreamedSceneAssetBundle)
-                {
-                    assets = item.GetAllScenePaths();
-                }
-                else
-                {
-                    assets = item.GetAllAssetNames();
-                }
-                md5sum = assets.AsParallel().Aggregate("", (last, value) =>
-                {
-                    var calc = CalcAssetMD5(value);
-                    return last + calc;
-                });
-
-                size = (int)new FileInfo(path).Length;
-
+                int size = (int)new FileInfo(path).Length;
+                md5sum = assets.AsParallel().Aggregate("", (last, value) => CalcAssetMD5(value) + last);
+                md5sum = CalcMD5(md5sum).Substring(0, 8);
                 return new PatchFileInfo
                 {
                     size = size,
@@ -96,6 +89,7 @@ namespace Au.Patcher
                     md5 = md5sum,
                 }; // CalcMD5(md5sum);
             });
+
             AssetBundle.UnloadAllAssetBundles(true);
             return ret.ToArray();
         }

@@ -1,0 +1,18 @@
+[
+    {
+        "id": "liv.vip-goods.01",
+        "name": "i18n_100001",
+        "info": "i18n_100002",
+        "price": 5.99,
+        "exp": 600,
+        "icon": "chongzhi-icon-60"
+    },
+    {
+        "id": "liv.vip-goods.02",
+        "name": "i18n_100003",
+        "info": "i18n_100004",
+        "price": 10.99,
+        "exp": 1200,
+        "icon": "chongzhi-icon-60"
+    }
+]

@@ -1,6 +1,4 @@
-﻿using Au.Patcher.Au.Patcher;
-using log4net.Repository.Hierarchy;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
