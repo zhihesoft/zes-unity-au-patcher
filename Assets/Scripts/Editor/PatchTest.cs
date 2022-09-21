@@ -10,7 +10,14 @@ public static class PatchTest
     {
         BuildBundles();
         await Task.Delay(1);
-        PatcherBuilder.Build("1.0.0", "http://test.com/android", "0.0.0", "AssetBundles");
+        PatcherBuilder.Build(new BuildSettings {
+            app = "test",
+            version = "1.0.0",
+            url = "http://test.com/android",
+            minVersion = "0.0.0",
+            bundlesDir = "AssetBundles"
+        });
+        // PatcherBuilder.Build("1.0.0", "http://test.com/android", "0.0.0", "AssetBundles");
     }
 
     private static void BuildBundles()

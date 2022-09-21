@@ -8,49 +8,33 @@ using UnityEngine.Assertions;
 
 namespace Au.Patcher
 {
+    /// <summary>
+    /// Patch Builder
+    /// </summary>
     public static class PatcherBuilder
     {
         /// <summary>
-        /// when true, use the first 8 hash code.
-        /// </summary>
-        public static bool useShortHash = true;
-
-        /// <summary>
-        /// output pretty print json
-        /// </summary>
-        public static bool prettyPrint = true;
-
-        /// <summary>
         /// Build patcher
         /// </summary>
-        /// <param name="version"></param>
-        /// <param name="url"></param>
-        /// <param name="minVersion"></param>
-        /// <param name="bundlesDir"></param>
-        /// <param name="copyToStreaming"></param>
-        public static void Build(
-            string version,
-            string url,
-            string minVersion,
-            string bundlesDir)
+        /// <param name="settings">Build settings</param>
+        public static void Build(BuildSettings settings)
         {
-            string versionInfoPath = Path.Combine(bundlesDir, Constants.versionInfoFile);
-            var versionInfo = new VersionInfo
-            {
-                version = version,
-                url = url,
-                minVersion = minVersion,
-            };
-            SaveJson(versionInfo, versionInfoPath);
+            Assert.IsNotNull(settings);
+            Assert.IsTrue(settings.Validate());
 
-            string patchInfoPath = Path.Combine(bundlesDir, Constants.patchInfoFile);
+            string versionInfoPath = Path.Combine(settings.bundlesDir, Constants.versionInfoFile);
+            var versionInfo = settings.CreateVersionInfo();
+            SaveJson(versionInfo, versionInfoPath, settings.prettyPrint);
+
+            string patchInfoPath = Path.Combine(settings.bundlesDir, Constants.patchInfoFile);
             var patchInfo = new PatchInfo
             {
-                version = version,
-                url = url,
-                files = CalcBundleHash(bundlesDir),
+                app = settings.app,
+                version = versionInfo.version,
+                files = CalcBundleHash(settings.bundlesDir, settings.shortHash),
             };
-            SaveJson(patchInfo, patchInfoPath);
+            SaveJson(patchInfo, patchInfoPath, settings.prettyPrint);
+
 
             if (!Directory.Exists(Application.streamingAssetsPath))
             {
@@ -59,15 +43,6 @@ namespace Au.Patcher
 
             File.Copy(versionInfoPath, Path.Combine(Application.streamingAssetsPath, Constants.versionInfoFile), true);
             File.Copy(patchInfoPath, Path.Combine(Application.streamingAssetsPath, Constants.patchInfoFile), true);
-
-            //if (copyToStreaming)
-            //{
-            //    var bundles = GetBundles(bundlesDir);
-            //    bundles.ToList().ForEach(i =>
-            //    {
-            //        File.Copy(Path.Combine(bundlesDir, i), Path.Combine(Application.streamingAssetsPath, i), true);
-            //    });
-            //}
         }
 
         /// <summary>
@@ -75,7 +50,7 @@ namespace Au.Patcher
         /// </summary>
         /// <param name="bundlesDir"></param>
         /// <returns></returns>
-        public static PatchFileInfo[] CalcBundleHash(string bundlesDir)
+        private static PatchFileInfo[] CalcBundleHash(string bundlesDir, bool useShortHash)
         {
             AssetBundle.UnloadAllAssetBundles(true);
 
@@ -152,7 +127,7 @@ namespace Au.Patcher
             return ret;
         }
 
-        private static void SaveJson(object obj, string path)
+        private static void SaveJson(object obj, string path, bool prettyPrint)
         {
             Encoding utf8WithoutBOM = new UTF8Encoding(false);
             using (StreamWriter writer = new StreamWriter(path, false, utf8WithoutBOM))
